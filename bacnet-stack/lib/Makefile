@@ -72,6 +72,7 @@ CORE_SRC = \
 	$(BACNET_CORE)/get_alarm_sum.c \
 	$(BACNET_CORE)/readrange.c \
 	$(BACNET_CORE)/timestamp.c \
+	$(BACNET_CORE)/lighting.c \
 	$(BACNET_CORE)/version.c
 
 HANDLER_SRC = \
@@ -122,6 +123,7 @@ HANDLER_SRC = \
 	$(BACNET_HANDLER)/s_uevent.c  \
 	$(BACNET_HANDLER)/s_whohas.c \
 	$(BACNET_HANDLER)/s_whois.c  \
+	$(BACNET_HANDLER)/s_wpm.c  \
 	$(BACNET_HANDLER)/s_upt.c \
 	$(BACNET_HANDLER)/s_wp.c
 

@@ -282,7 +282,7 @@ int bacfile_read_property(
         case PROP_FILE_ACCESS_METHOD:
             apdu_len =
                 encode_application_enumerated(&apdu[0],
-                    FILE_RECORD_AND_STREAM_ACCESS);
+                FILE_RECORD_AND_STREAM_ACCESS);
             break;
         default:
             rpdata->error_class = ERROR_CLASS_PROPERTY;
@@ -522,6 +522,7 @@ bool bacfile_write_record_data(
     FILE *pFile = NULL;
     uint32_t i = 0;
     char dummy_data[FILE_RECORD_SIZE];
+    char *pData = NULL;
 
     pFilename = bacfile_name(data->object_instance);
     if (pFilename) {
@@ -542,15 +543,16 @@ bool bacfile_write_record_data(
             if ((data->type.record.fileStartRecord != -1) &&
                 (data->type.record.fileStartRecord > 0)) {
                 for (i = 0; i < data->type.record.fileStartRecord; i++) {
-                    fgets(&dummy_data[0], sizeof(dummy_data), pFile);
-                    if (feof(pFile)) {
+                    pData = fgets(&dummy_data[0], sizeof(dummy_data), pFile);
+                    if ((pData == NULL) || feof(pFile)) {
                         break;
                     }
                 }
             }
             for (i = 0; i < data->type.record.returnedRecordCount; i++) {
                 if (fwrite(octetstring_value(&data->fileData[i]),
-                        octetstring_length(&data->fileData[i]), 1, pFile) != 1) {
+                        octetstring_length(&data->fileData[i]), 1,
+                        pFile) != 1) {
                     /* do something if it fails? */
                 }
             }
@@ -597,7 +599,8 @@ bool bacfile_read_ack_record_data(
     FILE *pFile = NULL;
     char *pFilename = NULL;
     uint32_t i = 0;
-    char dummy_data[MAX_OCTET_STRING_BYTES] = {0};
+    char dummy_data[MAX_OCTET_STRING_BYTES] = { 0 };
+    char *pData = NULL;
 
     pFilename = bacfile_name(instance);
     if (pFilename) {
@@ -606,18 +609,19 @@ bool bacfile_read_ack_record_data(
         if (pFile) {
             if (data->type.record.fileStartRecord > 0) {
                 for (i = 0; i < data->type.record.fileStartRecord; i++) {
-                    fgets(&dummy_data[0], sizeof(dummy_data), pFile);
-                    if (feof(pFile)) {
+                    pData = fgets(&dummy_data[0], sizeof(dummy_data), pFile);
+                    if ((pData == NULL) || feof(pFile)) {
                         break;
                     }
                 }
             }
             for (i = 0; i < data->type.record.RecordCount; i++) {
                 if (fwrite(octetstring_value(&data->fileData[i]),
-                        octetstring_length(&data->fileData[i]), 1, pFile) != 1) {
+                        octetstring_length(&data->fileData[i]), 1,
+                        pFile) != 1) {
 #if PRINT_ENABLED
-                    fprintf(stderr, "Failed to write to %s (%lu)!\n", pFilename,
-                        (unsigned long) instance);
+                    fprintf(stderr, "Failed to write to %s (%lu)!\n",
+                        pFilename, (unsigned long) instance);
 #endif
                 }
             }

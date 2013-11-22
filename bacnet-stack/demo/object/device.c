@@ -54,6 +54,7 @@
 #include "bi.h"
 #include "bo.h"
 #include "bv.h"
+#include "channel.h"
 #include "csv.h"
 #include "lc.h"
 #include "lsp.h"
@@ -197,7 +198,6 @@ static object_functions_t My_Object_Table[] = {
             NULL /* COV */ ,
             NULL /* COV Clear */ ,
         NULL /* Intrinsic Reporting */ },
-#if 0
     {OBJECT_CHARACTERSTRING_VALUE,
             CharacterString_Value_Init,
             CharacterString_Value_Count,
@@ -213,7 +213,6 @@ static object_functions_t My_Object_Table[] = {
             NULL /* COV */ ,
             NULL /* COV Clear */ ,
         NULL /* Intrinsic Reporting */ },
-#endif
 #if defined(INTRINSIC_REPORTING)
     {OBJECT_NOTIFICATION_CLASS,
             Notification_Class_Init,
@@ -291,7 +290,6 @@ static object_functions_t My_Object_Table[] = {
             NULL /* COV */ ,
             NULL /* COV Clear */ ,
         NULL /* Intrinsic Reporting */ },
-#if 0
     {OBJECT_MULTI_STATE_VALUE,
             Multistate_Value_Init,
             Multistate_Value_Count,
@@ -307,7 +305,6 @@ static object_functions_t My_Object_Table[] = {
             NULL /* COV */ ,
             NULL /* COV Clear */ ,
         NULL /* Intrinsic Reporting */ },
-#endif
     {OBJECT_TRENDLOG,
             Trend_Log_Init,
             Trend_Log_Count,
@@ -318,6 +315,36 @@ static object_functions_t My_Object_Table[] = {
             Trend_Log_Write_Property,
             Trend_Log_Property_Lists,
             TrendLogGetRRInfo,
+            NULL /* Iterator */ ,
+            NULL /* Value_Lists */ ,
+            NULL /* COV */ ,
+            NULL /* COV Clear */ ,
+        NULL /* Intrinsic Reporting */ },
+    {OBJECT_LIGHTING_OUTPUT,
+            Lighting_Output_Init,
+            Lighting_Output_Count,
+            Lighting_Output_Index_To_Instance,
+            Lighting_Output_Valid_Instance,
+            Lighting_Output_Object_Name,
+            Lighting_Output_Read_Property,
+            Lighting_Output_Write_Property,
+            Lighting_Output_Property_Lists,
+            NULL /* ReadRangeInfo */ ,
+            NULL /* Iterator */ ,
+            NULL /* Value_Lists */ ,
+            NULL /* COV */ ,
+            NULL /* COV Clear */ ,
+        NULL /* Intrinsic Reporting */ },
+    {OBJECT_CHANNEL,
+            Channel_Init,
+            Channel_Count,
+            Channel_Index_To_Instance,
+            Channel_Valid_Instance,
+            Channel_Object_Name,
+            Channel_Read_Property,
+            Channel_Write_Property,
+            Channel_Property_Lists,
+            NULL /* ReadRangeInfo */ ,
             NULL /* Iterator */ ,
             NULL /* Value_Lists */ ,
             NULL /* COV */ ,
@@ -397,21 +424,6 @@ rr_info_function Device_Objects_RR_Info(
 
     pObject = Device_Objects_Find_Functions(object_type);
     return (pObject != NULL ? pObject->Object_RR_Info : NULL);
-}
-
-static unsigned property_list_count(
-    const int *pList)
-{
-    unsigned property_count = 0;
-
-    if (pList) {
-        while (*pList != -1) {
-            property_count++;
-            pList++;
-        }
-    }
-
-    return property_count;
 }
 
 /** For a given object type, returns the special property list.
@@ -1116,10 +1128,10 @@ int    tm_isdst Daylight Savings flag.
 */
 #if defined(_MSC_VER)
     time(&tTemp);
-    tblock = localtime(&tTemp);
+    tblock = (struct tm *)localtime(&tTemp);
 #else
     if (gettimeofday(&tv, NULL) == 0) {
-        tblock = localtime(&tv.tv_sec);
+        tblock = (struct tm *)localtime((const time_t *)&tv.tv_sec);
     }
 #endif
 
@@ -1173,7 +1185,7 @@ int Device_Read_Property_Local(
     uint8_t *apdu = NULL;
     struct object_functions *pObject = NULL;
     bool found = false;
-    uint16_t apdu_max =0;
+    uint16_t apdu_max = 0;
 
     if ((rpdata == NULL) || (rpdata->application_data == NULL) ||
         (rpdata->application_data_len == 0)) {
@@ -1818,8 +1830,8 @@ void Device_Init(
     struct uci_context *ctx;
     fprintf(stderr, "Device_Init\n");
     ctx = ucix_init("bacnet_dev");
-    if(!ctx)
-        fprintf(stderr,  "Failed to load config file bacnet_dev\n");
+    if (!ctx)
+        fprintf(stderr, "Failed to load config file bacnet_dev\n");
     uciname = ucix_get_option(ctx, "bacnet_dev", "0", "Name");
     if (uciname != 0) {
         characterstring_init_ansi(&My_Object_Name, uciname);

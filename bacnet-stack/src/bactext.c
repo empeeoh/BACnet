@@ -1005,7 +1005,7 @@ INDTEXT_DATA bacnet_property_names[] = {
     ,
     {PROP_DEFAULT_STEP_INCREMENT, "default-step-increment"}
     ,
-    {PROP_EGRESS_TIMER, "egress-timer"}
+    {PROP_EGRESS_TIME, "egress-time"}
     ,
     {PROP_IN_PROGRESS, "in-progress"}
     ,
@@ -1014,7 +1014,7 @@ INDTEXT_DATA bacnet_property_names[] = {
     {PROP_LIGHTING_COMMAND, "lighting-command"}
     ,
     {PROP_LIGHTING_COMMAND_DEFAULT_PRIORITY,
-            "lighting-command-default-priority"}
+        "lighting-command-default-priority"}
     ,
     {PROP_MAX_ACTUAL_VALUE, "max-actual-value"}
     ,
@@ -1037,6 +1037,14 @@ const char *bactext_property_name(
 {
     return indtext_by_index_split_default(bacnet_property_names, index, 512,
         ASHRAE_Reserved_String, Vendor_Proprietary_String);
+}
+
+const char *bactext_property_name_default(
+    unsigned index,
+    const char *default_string)
+{
+    return indtext_by_index_default(bacnet_property_names, index,
+        default_string);
 }
 
 unsigned bactext_property_id(
@@ -1483,6 +1491,8 @@ INDTEXT_DATA bacnet_reject_reason_names[] = {
     ,
     {REJECT_REASON_UNRECOGNIZED_SERVICE, "Unrecognized Service"}
     ,
+    {REJECT_REASON_PROPRIETARY_FIRST, "Proprietary"}
+    ,
     {0, NULL}
 };
 
@@ -1490,7 +1500,7 @@ const char *bactext_reject_reason_name(
     unsigned index)
 {
     return indtext_by_index_split_default(bacnet_reject_reason_names, index,
-        FIRST_PROPRIETARY_REJECT_REASON, ASHRAE_Reserved_String,
+        REJECT_REASON_PROPRIETARY_FIRST, ASHRAE_Reserved_String,
         Vendor_Proprietary_String);
 }
 
@@ -1506,6 +1516,8 @@ INDTEXT_DATA bacnet_abort_reason_names[] = {
     ,
     {ABORT_REASON_SEGMENTATION_NOT_SUPPORTED, "Segmentation Not Supported"}
     ,
+    {ABORT_REASON_PROPRIETARY_FIRST, "Proprietary"}
+    ,
     {0, NULL}
 };
 
@@ -1513,7 +1525,7 @@ const char *bactext_abort_reason_name(
     unsigned index)
 {
     return indtext_by_index_split_default(bacnet_abort_reason_names, index,
-        FIRST_PROPRIETARY_ABORT_REASON, ASHRAE_Reserved_String,
+        ABORT_REASON_PROPRIETARY_FIRST, ASHRAE_Reserved_String,
         Vendor_Proprietary_String);
 }
 
@@ -1731,59 +1743,116 @@ INDTEXT_DATA bacnet_error_code_names[] = {
     ,
     {ERROR_CODE_COMMUNICATION_DISABLED, "access-denied"}
     ,
-    {ERROR_CODE_SUCCESS, "success"},
-    {ERROR_CODE_ACCESS_DENIED, "access-denied"},
-    {ERROR_CODE_BAD_DESTINATION_ADDRESS, "bad-destination-address"},
-    {ERROR_CODE_BAD_DESTINATION_DEVICE_ID, "bad-destination-device-id"},
-    {ERROR_CODE_BAD_SIGNATURE, "bad-signature"},
-    {ERROR_CODE_BAD_SOURCE_ADDRESS, "bad-source-address"},
-    {ERROR_CODE_BAD_TIMESTAMP, "bad-timestamp"},
-    {ERROR_CODE_CANNOT_USE_KEY, "cannot-use-key"},
-    {ERROR_CODE_CANNOT_VERIFY_MESSAGE_ID, "cannot-verify-message-id"},
-    {ERROR_CODE_CORRECT_KEY_REVISION, "correct-key-revision"},
-    {ERROR_CODE_DESTINATION_DEVICE_ID_REQUIRED, "destination-device-id-required"},
-    {ERROR_CODE_DUPLICATE_MESSAGE, "duplicate-message"},
-    {ERROR_CODE_ENCRYPTION_NOT_CONFIGURED, "encryption-not-configured"},
-    {ERROR_CODE_ENCRYPTION_REQUIRED, "encryption-required"},
-    {ERROR_CODE_INCORRECT_KEY, "incorrect-key"},
-    {ERROR_CODE_INVALID_KEY_DATA, "invalid-key-data"},
-    {ERROR_CODE_KEY_UPDATE_IN_PROGRESS, "key-update-in-progress"},
-    {ERROR_CODE_MALFORMED_MESSAGE, "malformed-message"},
-    {ERROR_CODE_NOT_KEY_SERVER, "not-key-server"},
-    {ERROR_CODE_SECURITY_NOT_CONFIGURED, "security-not-configured"},
-    {ERROR_CODE_SOURCE_SECURITY_REQUIRED, "source-security-required"},
-    {ERROR_CODE_TOO_MANY_KEYS, "too-many-keys"},
-    {ERROR_CODE_UNKNOWN_AUTHENTICATION_TYPE, "unknown-authentication-type"},
-    {ERROR_CODE_UNKNOWN_KEY, "unknown-key"},
-    {ERROR_CODE_UNKNOWN_KEY_REVISION, "unknown-key-revision"},
-    {ERROR_CODE_UNKNOWN_SOURCE_MESSAGE, "unknown-source-message"},
-    {ERROR_CODE_NOT_ROUTER_TO_DNET, "not-router-to-dnet"},
-    {ERROR_CODE_ROUTER_BUSY, "router-busy"},
-    {ERROR_CODE_UNKNOWN_NETWORK_MESSAGE, "unknown-network-message"},
-    {ERROR_CODE_MESSAGE_TOO_LONG, "message-too-long"},
-    {ERROR_CODE_SECURITY_ERROR, "security-error"},
-    {ERROR_CODE_ADDRESSING_ERROR, "addressing-error"},
-    {ERROR_CODE_WRITE_BDT_FAILED, "write-bdt-failed"},
-    {ERROR_CODE_READ_BDT_FAILED, "read-bdt-failed"},
-    {ERROR_CODE_REGISTER_FOREIGN_DEVICE_FAILED, "register-foreign-device-failed"},
-    {ERROR_CODE_READ_FDT_FAILED, "read-fdt-failed"},
-    {ERROR_CODE_DELETE_FDT_ENTRY_FAILED, "delete-fdt-entry-failed"},
-    {ERROR_CODE_DISTRIBUTE_BROADCAST_FAILED, "distribute-broadcast-failed"},
-    {ERROR_CODE_UNKNOWN_FILE_SIZE, "unknown-file-size"},
-    {ERROR_CODE_ABORT_APDU_TOO_LONG, "abort-apdu-too-long"},
-    {ERROR_CODE_ABORT_APPLICATION_EXCEEDED_REPLY_TIME, "abort-application-exceeded-reply-time"},
-    {ERROR_CODE_ABORT_OUT_OF_RESOURCES, "abort-out-of-resources"},
-    {ERROR_CODE_ABORT_TSM_TIMEOUT, "abort-tsm-timeout"},
-    {ERROR_CODE_ABORT_WINDOW_SIZE_OUT_OF_RANGE, "abort-window-size-out-of-range"},
-    {ERROR_CODE_FILE_FULL, "file-full"},
-    {ERROR_CODE_INCONSISTENT_CONFIGURATION, "inconsistent-configuration"},
-    {ERROR_CODE_INCONSISTENT_OBJECT_TYPE, "inconsistent-object-type"},
-    {ERROR_CODE_INTERNAL_ERROR, "internal-error"},
-    {ERROR_CODE_NOT_CONFIGURED, "not-configured"},
-    {ERROR_CODE_OUT_OF_MEMORY, "out-of-memory"},
-    {ERROR_CODE_VALUE_TOO_LONG, "value-too-long"},
-    {ERROR_CODE_ABORT_INSUFFICIENT_SECURITY, "abort-insufficient-security"},
-    {ERROR_CODE_ABORT_SECURITY_ERROR, "abort-security-error"},
+    {ERROR_CODE_SUCCESS, "success"}
+    ,
+    {ERROR_CODE_ACCESS_DENIED, "access-denied"}
+    ,
+    {ERROR_CODE_BAD_DESTINATION_ADDRESS, "bad-destination-address"}
+    ,
+    {ERROR_CODE_BAD_DESTINATION_DEVICE_ID, "bad-destination-device-id"}
+    ,
+    {ERROR_CODE_BAD_SIGNATURE, "bad-signature"}
+    ,
+    {ERROR_CODE_BAD_SOURCE_ADDRESS, "bad-source-address"}
+    ,
+    {ERROR_CODE_BAD_TIMESTAMP, "bad-timestamp"}
+    ,
+    {ERROR_CODE_CANNOT_USE_KEY, "cannot-use-key"}
+    ,
+    {ERROR_CODE_CANNOT_VERIFY_MESSAGE_ID, "cannot-verify-message-id"}
+    ,
+    {ERROR_CODE_CORRECT_KEY_REVISION, "correct-key-revision"}
+    ,
+    {ERROR_CODE_DESTINATION_DEVICE_ID_REQUIRED,
+        "destination-device-id-required"}
+    ,
+    {ERROR_CODE_DUPLICATE_MESSAGE, "duplicate-message"}
+    ,
+    {ERROR_CODE_ENCRYPTION_NOT_CONFIGURED, "encryption-not-configured"}
+    ,
+    {ERROR_CODE_ENCRYPTION_REQUIRED, "encryption-required"}
+    ,
+    {ERROR_CODE_INCORRECT_KEY, "incorrect-key"}
+    ,
+    {ERROR_CODE_INVALID_KEY_DATA, "invalid-key-data"}
+    ,
+    {ERROR_CODE_KEY_UPDATE_IN_PROGRESS, "key-update-in-progress"}
+    ,
+    {ERROR_CODE_MALFORMED_MESSAGE, "malformed-message"}
+    ,
+    {ERROR_CODE_NOT_KEY_SERVER, "not-key-server"}
+    ,
+    {ERROR_CODE_SECURITY_NOT_CONFIGURED, "security-not-configured"}
+    ,
+    {ERROR_CODE_SOURCE_SECURITY_REQUIRED, "source-security-required"}
+    ,
+    {ERROR_CODE_TOO_MANY_KEYS, "too-many-keys"}
+    ,
+    {ERROR_CODE_UNKNOWN_AUTHENTICATION_TYPE, "unknown-authentication-type"}
+    ,
+    {ERROR_CODE_UNKNOWN_KEY, "unknown-key"}
+    ,
+    {ERROR_CODE_UNKNOWN_KEY_REVISION, "unknown-key-revision"}
+    ,
+    {ERROR_CODE_UNKNOWN_SOURCE_MESSAGE, "unknown-source-message"}
+    ,
+    {ERROR_CODE_NOT_ROUTER_TO_DNET, "not-router-to-dnet"}
+    ,
+    {ERROR_CODE_ROUTER_BUSY, "router-busy"}
+    ,
+    {ERROR_CODE_UNKNOWN_NETWORK_MESSAGE, "unknown-network-message"}
+    ,
+    {ERROR_CODE_MESSAGE_TOO_LONG, "message-too-long"}
+    ,
+    {ERROR_CODE_SECURITY_ERROR, "security-error"}
+    ,
+    {ERROR_CODE_ADDRESSING_ERROR, "addressing-error"}
+    ,
+    {ERROR_CODE_WRITE_BDT_FAILED, "write-bdt-failed"}
+    ,
+    {ERROR_CODE_READ_BDT_FAILED, "read-bdt-failed"}
+    ,
+    {ERROR_CODE_REGISTER_FOREIGN_DEVICE_FAILED,
+        "register-foreign-device-failed"}
+    ,
+    {ERROR_CODE_READ_FDT_FAILED, "read-fdt-failed"}
+    ,
+    {ERROR_CODE_DELETE_FDT_ENTRY_FAILED, "delete-fdt-entry-failed"}
+    ,
+    {ERROR_CODE_DISTRIBUTE_BROADCAST_FAILED, "distribute-broadcast-failed"}
+    ,
+    {ERROR_CODE_UNKNOWN_FILE_SIZE, "unknown-file-size"}
+    ,
+    {ERROR_CODE_ABORT_APDU_TOO_LONG, "abort-apdu-too-long"}
+    ,
+    {ERROR_CODE_ABORT_APPLICATION_EXCEEDED_REPLY_TIME,
+        "abort-application-exceeded-reply-time"}
+    ,
+    {ERROR_CODE_ABORT_OUT_OF_RESOURCES, "abort-out-of-resources"}
+    ,
+    {ERROR_CODE_ABORT_TSM_TIMEOUT, "abort-tsm-timeout"}
+    ,
+    {ERROR_CODE_ABORT_WINDOW_SIZE_OUT_OF_RANGE,
+        "abort-window-size-out-of-range"}
+    ,
+    {ERROR_CODE_FILE_FULL, "file-full"}
+    ,
+    {ERROR_CODE_INCONSISTENT_CONFIGURATION, "inconsistent-configuration"}
+    ,
+    {ERROR_CODE_INCONSISTENT_OBJECT_TYPE, "inconsistent-object-type"}
+    ,
+    {ERROR_CODE_INTERNAL_ERROR, "internal-error"}
+    ,
+    {ERROR_CODE_NOT_CONFIGURED, "not-configured"}
+    ,
+    {ERROR_CODE_OUT_OF_MEMORY, "out-of-memory"}
+    ,
+    {ERROR_CODE_VALUE_TOO_LONG, "value-too-long"}
+    ,
+    {ERROR_CODE_ABORT_INSUFFICIENT_SECURITY, "abort-insufficient-security"}
+    ,
+    {ERROR_CODE_ABORT_SECURITY_ERROR, "abort-security-error"}
+    ,
     {0, NULL}
 };
 
@@ -2159,4 +2228,42 @@ const char *bactext_network_layer_msg_name(
         return Vendor_Proprietary_String;
     else
         return "Invalid Network Layer Message";
+}
+
+INDTEXT_DATA bacnet_lighting_operation_names[] = {
+    {BACNET_LIGHTS_NONE, "none"}
+    ,
+    {BACNET_LIGHTS_FADE_TO, "fade-to"}
+    ,
+    {BACNET_LIGHTS_RAMP_TO, "ramp-to"}
+    ,
+    {BACNET_LIGHTS_STEP_UP, "step-up"}
+    ,
+    {BACNET_LIGHTS_STEP_DOWN, "step-down"}
+    ,
+    {BACNET_LIGHTS_STEP_ON, "step-on"}
+    ,
+    {BACNET_LIGHTS_STEP_OFF, "step-off"}
+    ,
+    {BACNET_LIGHTS_WARN, "warn"}
+    ,
+    {BACNET_LIGHTS_WARN_OFF, "warn-off"}
+    ,
+    {BACNET_LIGHTS_WARN_RELINQUISH, "warn-relinquish"}
+    ,
+    {BACNET_LIGHTS_STOP, "stop"}
+    ,
+    {0, NULL}
+};
+
+const char *bactext_lighting_operation_name(
+    unsigned index)
+{
+    if (index < BACNET_LIGHTS_PROPRIETARY_FIRST)
+        return indtext_by_index_default(network_layer_msg_names, index,
+            ASHRAE_Reserved_String);
+    else if (index <= BACNET_LIGHTS_PROPRIETARY_LAST)
+        return Vendor_Proprietary_String;
+    else
+        return "Invalid BACnetLightingOperation";
 }

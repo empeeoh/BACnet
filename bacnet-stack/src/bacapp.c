@@ -46,6 +46,7 @@
 #include "bactext.h"
 #include "datetime.h"
 #include "bacstr.h"
+#include "lighting.h"
 
 /** @file bacapp.c  Utilities for the BACnet_Application_Data_Value */
 
@@ -144,6 +145,13 @@ int bacapp_encode_application_data(
                     encode_application_object_id(&apdu[0],
                     (int) value->type.Object_Id.type,
                     value->type.Object_Id.instance);
+                break;
+#endif
+#if defined (BACAPP_LIGHTING_COMMAND)
+            case BACNET_APPLICATION_TAG_LIGHTING_COMMAND:
+                apdu_len =
+                    lighting_command_encode(&apdu[0],
+                    &value->type.Lighting_Command);
                 break;
 #endif
             default:
@@ -257,6 +265,14 @@ int bacapp_decode_data(
                     value->type.Object_Id.type = object_type;
                     value->type.Object_Id.instance = instance;
                 }
+                break;
+#endif
+#if defined (BACAPP_LIGHTING_COMMAND)
+            case BACNET_APPLICATION_TAG_LIGHTING_COMMAND:
+                len =
+                    lighting_command_decode(
+                        &apdu[0], len_value_type,
+                        &value->type.Lighting_Command);
                 break;
 #endif
             default:
@@ -535,6 +551,14 @@ int bacapp_encode_context_data_value(
                     encode_context_object_id(&apdu[0], context_tag_number,
                     (int) value->type.Object_Id.type,
                     value->type.Object_Id.instance);
+                break;
+#endif
+#if defined (BACAPP_LIGHTING_COMMAND)
+            case BACNET_APPLICATION_TAG_LIGHTING_COMMAND:
+                apdu_len =
+                    lighting_command_encode_context(
+                    &apdu[0], context_tag_number,
+                    &value->type.Lighting_Command);
                 break;
 #endif
             default:
@@ -880,6 +904,13 @@ bool bacapp_copy(
                     src_value->type.Object_Id.instance;
                 break;
 #endif
+#if defined (BACAPP_LIGHTING_COMMAND)
+            case BACNET_APPLICATION_TAG_LIGHTING_COMMAND:
+                status = lighting_command_copy(
+                    &dest_value->type.Lighting_Command,
+                    &src_value->type.Lighting_Command);
+                break;
+#endif
             default:
                 status = false;
                 break;
@@ -1099,6 +1130,17 @@ int bacapp_snprintf_value(
                 break;
             case BACNET_APPLICATION_TAG_ENUMERATED:
                 switch (property) {
+                    case PROP_PROPERTY_LIST:
+                        char_str = (char *) bactext_property_name_default(
+                            value->type.Enumerated, NULL);
+                        if (char_str) {
+                            ret_val = snprintf(str, str_len, "%s", char_str);
+                        } else {
+                            ret_val =
+                                snprintf(str, str_len, "%lu",
+                                (unsigned long) value->type.Enumerated);
+                        }
+                        break;
                     case PROP_OBJECT_TYPE:
                         if (value->type.Enumerated < MAX_ASHRAE_OBJECT_TYPE) {
                             ret_val =
@@ -1140,7 +1182,7 @@ int bacapp_snprintf_value(
                         break;
                     case PROP_PRESENT_VALUE:
                     case PROP_RELINQUISH_DEFAULT:
-                        if (object_type < PROPRIETARY_BACNET_OBJECT_TYPE) {
+                        if (object_type < OBJECT_PROPRIETARY_MIN) {
                             ret_val =
                                 snprintf(str, str_len, "%s",
                                 bactext_binary_present_value_name(value->type.
@@ -1293,6 +1335,21 @@ int bacapp_snprintf_value(
                     if (!append_str(&p_str, &rem_str_len, temp_str))
                         break;
                 }
+                if (!append_str(&p_str, &rem_str_len, ")"))
+                    break;
+                /* If we get here, then everything is OK. Indicate how many */
+                /* bytes were written. */
+                ret_val = str_len - rem_str_len;
+                break;
+            case BACNET_APPLICATION_TAG_LIGHTING_COMMAND:
+                if (!append_str(&p_str, &rem_str_len, "("))
+                    break;
+                if (!append_str(&p_str, &rem_str_len,
+                        bactext_lighting_operation_name(value->type.
+                            Lighting_Command.operation))) {
+                    break;
+                }
+                /* FIXME: add the Lighting Command optional values */
                 if (!append_str(&p_str, &rem_str_len, ")"))
                     break;
                 /* If we get here, then everything is OK. Indicate how many */
@@ -1466,6 +1523,9 @@ bool bacapp_parse_application_data(
                     status = false;
                 }
                 break;
+            case BACNET_APPLICATION_TAG_LIGHTING_COMMAND:
+                /* FIXME: add parsing for lighting command */
+                break;
             default:
                 break;
         }
@@ -1586,7 +1646,13 @@ bool bacapp_same_value(
                     &test_value->type.Bit_String);
                 break;
 #endif
-
+#if defined (BACAPP_LIGHTING_COMMAND)
+            case BACNET_APPLICATION_TAG_BIT_STRING:
+                status = lighting_command_same(
+                    &value->type.Lighting_Command,
+                    &test_value->type.Lighting_Command);
+                break;
+#endif
             default:
                 status = false;
                 break;
